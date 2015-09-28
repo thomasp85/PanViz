@@ -134,3 +134,4 @@ Set.prototype.union = function(otherSet) {
 	return result;
 }
 
+module.exports = Set;

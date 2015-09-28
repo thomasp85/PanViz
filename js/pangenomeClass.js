@@ -1,5 +1,8 @@
 /*jshint loopfunc:true*/
 
+var Set = require('./Set.js');
+var d3 = require('d3');
+
 var clone = function(obj) {
 	var newObj = (obj instanceof Array) ? [] : {};
 	for (var i in obj) {
