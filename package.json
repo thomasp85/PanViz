@@ -1,0 +1,24 @@
+{
+  "name": "panviz",
+  "version": "0.1.0",
+  "description": "D3.js based visualization of functionally annotated pangenomes.",
+  "author": "Thomas Lin Pedersen <thomasp85@gmail.com>",
+  "keywords": [
+    "bioinformatics",
+    "comparative genomics",
+    "visualization",
+    "pangenomics",
+    "gene ontology"
+  ],
+  "bugs": "https://github.com/thomasp85/PanViz/issues",
+  "repository": "https://github.com/thomasp85/PanViz",
+  "license": "GPL-2.0",
+  "dependencies": {
+    "d3": "^3.5.6"
+  },
+  "devDependencies": {
+    "broccoli-browserify": "^0.1.0",
+    "broccoli-merge-trees": "^0.2.3",
+    "broccoli-uglify-sourcemap": "^1.0.1"
+  }
+}
