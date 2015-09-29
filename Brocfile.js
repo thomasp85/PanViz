@@ -11,17 +11,17 @@ var jsDir = 'js';
 var htmlDir = 'html';
 
 // Combine Js
-var fullJs = browserify(jsDir, {
+jsDir = browserify(jsDir, {
 	entries: ['./pangenomeClass.js'],
 	outputFile: './script.js'
 });
 
 // Minify
-var uglyJs = uglify(fullJs, {
+jsDir = uglify(fullJs, {
 	sourceMapConfig: {
 		enabled: false
 	}
 });
 
 // Merge the compiled styles and scripts into one output directory.
-module.exports = mergeTrees([uglyJs, cssDir, htmlDir]);
+module.exports = mergeTrees([jsDir, cssDir, htmlDir]);
