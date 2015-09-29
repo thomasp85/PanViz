@@ -17,7 +17,7 @@ jsDir = browserify(jsDir, {
 });
 
 // Minify
-jsDir = uglify(fullJs, {
+jsDir = uglify(jsDir, {
 	sourceMapConfig: {
 		enabled: false
 	}
