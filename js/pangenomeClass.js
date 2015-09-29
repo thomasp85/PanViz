@@ -2517,7 +2517,7 @@ var Circle = function(){
 	var treemap = d3.layout.treemap()
 //			.size([plotDim.circleDim.width-100, plotDim.circleDim.height])
 		//.sticky(true)
-		.children(function(d, depth) {return depth ? null : d.children;})
+//		.children(function(d, depth) {return depth ? null : d.children;})
 		.round(false);
 		//.value(function(d) {return d.OG.values().length})
 	this.treemap = treemap;
