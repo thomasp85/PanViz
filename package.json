@@ -1,6 +1,6 @@
 {
   "name": "panviz",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "D3.js based visualization of functionally annotated pangenomes.",
   "author": "Thomas Lin Pedersen <thomasp85@gmail.com>",
   "keywords": [
