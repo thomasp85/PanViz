@@ -2793,7 +2793,7 @@ var Circle = function(){
 				unmuteInteraction();
 			});
 	};
-	var updateBar = function(goPosition, panGroup) {
+	var updateBar = function(goPosition, panGroup, state) {
 		
 		updateGeneLink();
 		var transition = d3.transition()
@@ -2801,15 +2801,31 @@ var Circle = function(){
 			.each(function() {
 				circ.selectAll('.domainRect')
 					.data(panGroup)
+					.each(function(d) {
+						d.innerRadius = panGroupInner;
+						d.outerRadius = panGroupOuter;
+						d.height = barScale(d.start) - barScale(d.end);
+						d.y = barScale(d.end);
+						d.x = state == 'bar' ? plotDim.circleDim.width/2 + arcBarGutter : plotDim.circleDim.width-10;
+						d.width = 10;
+					})
 					.transition()
-						.attr('y', function(d) {return barScale(d.end);})
-						.attr('height', function(d) {return barScale(d.start) - barScale(d.end);});
+						.attr('y', function(d) {return d.y;})
+						.attr('height', function(d) {return d.height;});
 				
 				circ.selectAll('.classRect')
 					.data(goPosition.overall, function(d) {return d.domain+d.class;})
+					.each(function(d) {
+						d.innerRadius = goGroupInner;
+						d.outerRadius = goGroupOuter;
+						d.height = goScale.bar.new(d)[1] - goScale.bar.new(d)[0];
+						d.y = goScale.bar.new(d)[0];
+						d.x = state == 'bar' ? plotDim.circleDim.width/2 - arcBarwidth: plotDim.circleDim.width-arcBarwidth-arcBarGutter-10;
+						d.width = arcBarwidth;					
+					})
 					.transition()
-						.attr('y', function(d) {return goScale.bar.new(d)[0];})
-						.attr('height', function(d) {return goScale.bar.new(d)[1] - goScale.bar.new(d)[0];});
+						.attr('y', function(d) {return d.y;})
+						.attr('height', function(d) {return d.height;});
 				
 				circ.selectAll('.strainBar')
 					.each(function(d) {
@@ -3757,10 +3773,10 @@ var Circle = function(){
 				updateCircle(goPosition, panGroup);
 				break;
 			case 'bar':
-				updateBar(goPosition, panGroup);
+				updateBar(goPosition, panGroup, this.plotState);
 				break;
 			case 'tree':
-				var transition = updateBar(goPosition, panGroup);
+				var transition = updateBar(goPosition, panGroup, this.plotState);
 				var d = pgObject.oldGOpos.filter(function(f) {return f.domain == treeParent.top.domain && f.class == treeParent.top.class;})[0];
 				if (d.size !== 0) {
 					updateTree(d, 2000);
