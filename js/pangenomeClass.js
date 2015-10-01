@@ -1646,17 +1646,6 @@ var GeneList = function(){
 			})
 			.classed('geneRow', true)
 			.classed('inSubPan', function(d) {return d.inSubPan;});
-		
-		d3.selectAll('.domainCell')
-			.text(function(d) {
-				var pData = d3.select(this.parentNode).datum();
-				
-				if (pData.inSubPan) {
-					return pData.domain;
-				} else {
-					return "---";
-				}
-			});
 	};
 	var rowHover = function(d) {
 		var geneIndex = pgObject.fullGeneInfo.indexOf(d);
@@ -1703,7 +1692,7 @@ var GeneList = function(){
 			.classed('geneRow', true)
 			.on('mouseover', rowHover)
 			.on('mouseout', rowUnhover)
-			.selectAll('td').data(function(d,i) {return [d.id, d.name, d.domain, d.go, d.ec];})
+			.selectAll('td').data(function(d,i) {return [d.id, d.name, '', d.go, d.ec];})
 				.enter()
 				.append('td')
 				.classed('domainCell', function(d, i) {return i == 2;})
