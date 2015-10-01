@@ -26,6 +26,9 @@ h1 {
 #topTable table tr td {
 	border-bottom: 1px solid lightgrey;
 }
+#geneList tr.hidden {
+	display: none;
+}
 #geneList tr td {
 	width: 10%;
 	padding-left: 5px;
@@ -61,6 +64,9 @@ h1 {
 	fill-opacity: 1;
 	stroke-width: 2;
 }
+.inSubPan .domainCell{
+	background: goldenrod;
+}
 .inSubPan.Singleton .domainCell{
 	background: goldenrod;
 }
@@ -69,6 +75,18 @@ h1 {
 }
 .inSubPan.Core .domainCell {
 	background: brown;
+}
+.domainCell::after{
+	content: '---';
+}
+.inSubPan.Singleton .domainCell::after{
+	content: 'Singleton';
+}
+.inSubPan.Accessory .domainCell::after{
+	content: 'Accessory';
+}
+.inSubPan.Core .domainCell::after{
+	content: 'Core';
 }
 #circle .selectOn {
 	opacity: 0.5;
