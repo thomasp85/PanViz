@@ -2325,11 +2325,11 @@ var Dendrogram = function(){
 			
 			circle.barScale.domain([0, pgObject.geneInfo.length]);
 			
-			var transition = d3.transition();
+			var transition;
 			if(doUpdate){
-				transition.each(function() {
-					circle.updatePlot();
-				});
+				transition = circle.updatePlot();
+			} else {
+				transition = d3.transition();
 			}
 			
 			transition.each('end', function() {
@@ -2792,6 +2792,7 @@ var Circle = function(){
 				
 				unmuteInteraction();
 			});
+		return endTransition;
 	};
 	var updateBar = function(goPosition, panGroup, state) {
 		
@@ -2962,6 +2963,7 @@ var Circle = function(){
 			.each('end', function() {
 				unmuteInteraction();
 			});
+		return transition;
 	};
 	var addGeneLink = function() {
 		['a', 'b'].forEach(function(i) {
@@ -3770,11 +3772,9 @@ var Circle = function(){
 		
 		switch (this.plotState) {
 			case 'circle':
-				updateCircle(goPosition, panGroup);
-				break;
+				return updateCircle(goPosition, panGroup);
 			case 'bar':
-				updateBar(goPosition, panGroup, this.plotState);
-				break;
+				return updateBar(goPosition, panGroup, this.plotState);
 			case 'tree':
 				var transition = updateBar(goPosition, panGroup, this.plotState);
 				var d = pgObject.oldGOpos.filter(function(f) {return f.domain == treeParent.top.domain && f.class == treeParent.top.class;})[0];
@@ -3787,8 +3787,7 @@ var Circle = function(){
 							circle.toCircle();
 						});
 				}
-				
-				break;
+				return transition;
 		}
 
 	};
