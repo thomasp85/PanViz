@@ -15,6 +15,16 @@ h1 {
 	top: 0;
 	min-height: 100%;
 }
+#logo {
+	margin-top: 10px;
+	margin-bottom: 10px;
+	width: 100%;
+}
+#logo svg {
+	width: 200px;
+	margin: auto;
+	display: block;
+}
 #geneList {
 	width: 1800px;
 	background: whitesmoke;
