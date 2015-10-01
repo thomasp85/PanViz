@@ -1629,14 +1629,10 @@ var GeneList = function(){
 		}
 	};
 	var updateListRows = function() {
-		var table = d3.select('#geneListBody').selectAll('tr');
-		
-		table.style('display', function(d) {
-				if (genes.getElements().indexOf(d.id) === -1) {
-					return 'none';
-				} else {
-					return null;
-				}
+
+		d3.select('#geneListBody').selectAll('tr')
+			.classed('hidden', function(d) {
+				return !genes.contains(d.id);
 			});
 	};
 	var updateListColor = function() {
