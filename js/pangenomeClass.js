@@ -1641,10 +1641,17 @@ var GeneList = function(){
 	};
 	var updateListColor = function() {
 		d3.selectAll('.geneRow')
+			.filter(function(d) {
+				return !this.classList.contains(d.domain);
+			})
 			.attr('class', function(d) {
 				return d.domain;
 			})
-			.classed('geneRow', true)
+			.classed('geneRow', true);
+		d3.selectAll('.geneRow')
+			.filter(function(d) {
+				return this.classList.contains('inSubPan') ? !d.inSubPan : d.inSubPan;
+			})
 			.classed('inSubPan', function(d) {return d.inSubPan;});
 	};
 	var rowHover = function(d) {
