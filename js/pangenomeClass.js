@@ -734,54 +734,59 @@ function Pangenome(pan, geneInfo, hc, scatter, plotDim){
 		var nStrains = this.strains.length;
 		
 		subGeneInfo = fullGeneInfo.filter(function(d, i) {return remove[i] !== 0;});
-				
+		
+		var oldGeneInfoMap = d3.map(oldGeneInfo, function(d) {return d.id;});
+
 		subGeneInfo.forEach(function(d, i) {
-				if (nRep[i] == nStrains) {
-					if (oldGeneInfo.indexOf(d) != -1){
-						if (d.domain == 'Core'){
-							panGroupChanges.update.push(d);
-						} else {
-							panGroupChanges.change[d.domain].push(d);
-						}
+			var geneExist = oldGeneInfoMap.has(d.id);
+
+			if (nRep[i] == nStrains) {
+				if (geneExist){
+					if (d.domain == 'Core'){
+						panGroupChanges.update.push(d);
 					} else {
-						panGroupChanges.enter.push(d);
+						panGroupChanges.change[d.domain].push(d);
 					}
-					d.domain = 'Core';
-				} else if (nRep[i] == 1) {
-					if (oldGeneInfo.indexOf(d) != -1){
-						if (d.domain == 'Singleton'){
-							panGroupChanges.update.push(d);
-						} else {
-							panGroupChanges.change[d.domain].push(d);
-						}
-					} else {
-						panGroupChanges.enter.push(d);
-					}
-					d.domain = 'Singleton';
-				} else if (nRep[i] > 1 && nRep[i] < nStrains){
-					if (oldGeneInfo.indexOf(d) != -1){
-						if (d.domain == 'Accessory'){
-							panGroupChanges.update.push(d);
-						} else {
-							panGroupChanges.change[d.domain].push(d);
-						}
-					} else {
-						panGroupChanges.enter.push(d);
-					}
-					d.domain = 'Accessory';
+				} else {
+					panGroupChanges.enter.push(d);
 				}
-				return d;
+				d.domain = 'Core';
+			} else if (nRep[i] == 1) {
+				if (geneExist){
+					if (d.domain == 'Singleton'){
+						panGroupChanges.update.push(d);
+					} else {
+						panGroupChanges.change[d.domain].push(d);
+					}
+				} else {
+					panGroupChanges.enter.push(d);
+				}
+				d.domain = 'Singleton';
+			} else if (nRep[i] > 1 && nRep[i] < nStrains){
+				if (geneExist){
+					if (d.domain == 'Accessory'){
+						panGroupChanges.update.push(d);
+					} else {
+						panGroupChanges.change[d.domain].push(d);
+					}
+				} else {
+					panGroupChanges.enter.push(d);
+				}
+				d.domain = 'Accessory';
+			}
+			return d;
 		});
 
-// Get the changes from the old pangenome		
+// Get the changes from the old pangenome	
+		var subGeneInfoMap = d3.map(subGeneInfo, function(d) {return d.id;});
 		oldGeneInfo.forEach(function(d) {
-			if (subGeneInfo.indexOf(d) == -1){
+			if (!subGeneInfoMap.has(d.id)){
 				panGroupChanges.exit.push(d);
 			}
 		});
 		this.subGeneInfo = subGeneInfo;
 		this.fullGeneInfo.forEach(function(d) {
-			if (subGeneInfo.indexOf(d) == -1) {
+			if (!subGeneInfoMap.has(d.id)) {
 				d.inSubPan = false;
 			} else {
 				d.inSubPan = true;
