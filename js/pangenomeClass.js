@@ -1409,68 +1409,32 @@ circ.append('g') // <- Background group of circle/bar chart for showing the GO c
 	.attr('id', 'goChangeLayer');
 
 
-// Parse obo data
-var defs = {};
-var GO = [];
-var head = true;
-var re = /subsetdef/;
-for (i = 0; i < obo.length; i++){
-	if (head) {
-		if (obo[i].search(re) === 0) {
-			var line = obo[i].replace('subsetdef: ', '');
-			var data = line.match(/^(.+) "(.*)"/);
-			defs[data[1]] = data[2];
-		} else {
-			if (obo[i] == '[Term]') {
-				GO.push({});
-				head = false;
-			} else {}
-		}
-	} else {
-		if (obo[i] == '[Typedef]') break;
-		if (obo[i] == '[Term]') {
-			GO.push({});
-			head = false;
-		} else if (obo[i]){
-			var data = obo[i].match(/^(.*?): (.*)$/);
-			if(GO[GO.length-1][data[1]]) {
-				GO[GO.length-1][data[1]].push(data[2]);
-			} else {
-				GO[GO.length-1][data[1]] = [data[2]];
-			}
-		}
+// Parse GO
+var GO = go.vertices.id.map(function(d, i) {
+	return {
+		id: d,
+		name: this.name[i],
+		def: this.def[i],
+		namespace: this.namespace[i],
+		alt_id: this.alt_id[i],
+		is_obsolete: this.is_obsolete[i],
+		replaced_by: null,
+		subset: this.subset[i],
+		children: [],
+		parent: []
+	};
+}, go.vertices);
+go.edges.from.forEach(function(d, i) {
+	switch (this.type[i]) {
+		case 'is_a':
+			GO[this.from[i]-1].parent.push(GO[this.to[i]-1]);
+			GO[this.to[i]-1].children.push(GO[this.from[i]-1]);
+			break;
+		case 'replaced_by':
+			GO[this.from[i]-1].replaced_by = GO[this.to[i]-1];
+			break;
 	}
-}
-
-// Create map of all terms with id as key
-GOmap = {};
-GO.forEach(function(d) {
-	GOmap[d.id[0]] = d;
-	if (d.alt_id) {
-		d.alt_id.forEach(function(dd) {
-			GOmap[dd] = d;
-		});
-	}
-});
-
-// Assign parent/children relationship to all terms	
-GO.forEach(function(d) {
-	if (d.is_a) {
-		d.parent = [];
-		d.is_a.forEach(function(dd) {
-			var parent = GOmap[dd.match(/GO:\d+/)[0]];
-			d.parent.push(parent);
-			if(parent){
-				if (parent.children) {
-					parent.children.push(d);
-				} else {
-					parent.children = [d];
-				}
-			}
-		});
-	}
-});
-
+}, go.edges);
 // Assign offsprings to all terms
 var getOffspring = function(d) {
 	if (d.offspring) return d.offspring;
@@ -1492,6 +1456,16 @@ var getOffspring = function(d) {
 GO.forEach(function(d) {
 	if (!d.offspring && d.children) {
 		getOffspring(d);
+	}
+});
+
+GOmap = {};
+GO.forEach(function(d) {
+	GOmap[d.id] = d;
+	if (d.alt_id) {
+		d.alt_id.forEach(function(dd) {
+			GOmap[dd] = d;
+		});
 	}
 });
 
