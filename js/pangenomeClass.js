@@ -31,7 +31,7 @@ var union_arrays = function(x, y) {
 var copyTree = function(node, depth) {
 	var accumulateGenes = function(d) {
 		d.OG = d.genes.map(function(d) {return d.id;});
-		if(d.children) {
+		if(d.children && d.children.length) {
 			d.children.forEach(function(dd) {
 				d.OG = union_arrays(d.OG, accumulateGenes(dd));
 			});
@@ -51,14 +51,14 @@ var copyTree = function(node, depth) {
 		return uniqueGenes.getElements();
 	};
 	var accumulateValues = function(d) {
-        if (d.children) {
+        if (d.children && d.children.length) {
 	        d.children.forEach(function(c) {accumulateValues(c);});
         }
         d.geneIDs = countGenes(d);
         d.value = d.geneIDs.length;
 	};
 	var pruneNodes = function(d) {
-		if (d.children) {
+		if (d.children && d.children.length) {
 			for (var i = d.children.length-1; i >= 0; i--) {
 				if (d.children[i].value === 0) {
 					d.children.splice(i, 1);
@@ -81,7 +81,7 @@ var copyTree = function(node, depth) {
 				nChild[i] = child[i];
 			}
 		}
-		if (curDepth < depth && child.children) {
+		if (curDepth < depth && child.children.length) {
 			var children = child.children.map(function(d) {return copyChild(d, curDepth+1);}).filter(function(f) {return f;});
 			if (children.length !== 0) {
 				nChild.children = children;
@@ -290,7 +290,7 @@ var opacityToOneTween = function(d, i, a) {
 var getParent = function(node, count, miss, subset, depth, namespace) {
 	if (node.is_obsolete) {
 		if (node.replaced_by) {
-			node = GOmap[node.replaced_by];
+			node = node.replaced_by;
 		} else {
 			return null;
 		}
@@ -299,7 +299,7 @@ var getParent = function(node, count, miss, subset, depth, namespace) {
 		return null;
 	}
 	var doMiss = (node.subset && node.subset.indexOf(subset) != -1) | subset === '' ? 0 : 1;
-	if (node.parent) {
+	if (node.parent.length) {
 	
 		var res = node.parent.map(function(d) {
 			return getParent(d, count+1, miss+doMiss, subset, depth, namespace);
@@ -1409,73 +1409,37 @@ circ.append('g') // <- Background group of circle/bar chart for showing the GO c
 	.attr('id', 'goChangeLayer');
 
 
-// Parse obo data
-var defs = {};
-var GO = [];
-var head = true;
-var re = /subsetdef/;
-for (i = 0; i < obo.length; i++){
-	if (head) {
-		if (obo[i].search(re) === 0) {
-			var line = obo[i].replace('subsetdef: ', '');
-			var data = line.match(/^(.+) "(.*)"/);
-			defs[data[1]] = data[2];
-		} else {
-			if (obo[i] == '[Term]') {
-				GO.push({});
-				head = false;
-			} else {}
-		}
-	} else {
-		if (obo[i] == '[Typedef]') break;
-		if (obo[i] == '[Term]') {
-			GO.push({});
-			head = false;
-		} else if (obo[i]){
-			var data = obo[i].match(/^(.*?): (.*)$/);
-			if(GO[GO.length-1][data[1]]) {
-				GO[GO.length-1][data[1]].push(data[2]);
-			} else {
-				GO[GO.length-1][data[1]] = [data[2]];
-			}
-		}
+// Parse GO
+var GO = go.vertices.id.map(function(d, i) {
+	return {
+		id: d,
+		name: this.name[i],
+		def: this.def[i],
+		namespace: this.namespace[i],
+		alt_id: this.alt_id[i],
+		is_obsolete: this.is_obsolete[i],
+		replaced_by: null,
+		subset: this.subset[i],
+		children: [],
+		parent: []
+	};
+}, go.vertices);
+go.edges.from.forEach(function(d, i) {
+	switch (this.type[i]) {
+		case 'is_a':
+			GO[this.from[i]-1].parent.push(GO[this.to[i]-1]);
+			GO[this.to[i]-1].children.push(GO[this.from[i]-1]);
+			break;
+		case 'replaced_by':
+			GO[this.from[i]-1].replaced_by = GO[this.to[i]-1];
+			break;
 	}
-}
-
-// Create map of all terms with id as key
-GOmap = {};
-GO.forEach(function(d) {
-	GOmap[d.id[0]] = d;
-	if (d.alt_id) {
-		d.alt_id.forEach(function(dd) {
-			GOmap[dd] = d;
-		});
-	}
-});
-
-// Assign parent/children relationship to all terms	
-GO.forEach(function(d) {
-	if (d.is_a) {
-		d.parent = [];
-		d.is_a.forEach(function(dd) {
-			var parent = GOmap[dd.match(/GO:\d+/)[0]];
-			d.parent.push(parent);
-			if(parent){
-				if (parent.children) {
-					parent.children.push(d);
-				} else {
-					parent.children = [d];
-				}
-			}
-		});
-	}
-});
-
+}, go.edges);
 // Assign offsprings to all terms
 var getOffspring = function(d) {
 	if (d.offspring) return d.offspring;
 	
-	if (d.children) {
+	if (d.children.length) {
 		d.offspring = {};
 		
 		d.children.forEach(function(c) {
@@ -1490,8 +1454,18 @@ var getOffspring = function(d) {
 };
 
 GO.forEach(function(d) {
-	if (!d.offspring && d.children) {
+	if (!d.offspring && d.children.length) {
 		getOffspring(d);
+	}
+});
+
+GOmap = {};
+GO.forEach(function(d) {
+	GOmap[d.id] = d;
+	if (d.alt_id) {
+		d.alt_id.forEach(function(dd) {
+			GOmap[dd] = d;
+		});
 	}
 });
 
@@ -1502,7 +1476,7 @@ geneInfo.forEach(function(d, i) {
 		if (typeof d.go === 'string') {
 			d.go = [d.go];
 		}
-		var bp = d.go.filter(function(f) {return GOmap[f].namespace[0] == "biological_process";});
+		var bp = d.go.filter(function(f) {return GOmap[f].namespace == "biological_process";});
 		if (bp.length) {
 			bp = bp.map(function(dd) {
 				return getParent(GOmap[dd], 0, 0, "gosubset_prok", 2, "biological_process");
@@ -1524,7 +1498,7 @@ geneInfo.forEach(function(d, i) {
 						ans = bp[0];
 					}
 				}
-				d.class = goMapping.goTerm.indexOf(ans.id[0])+1;
+				d.class = goMapping.goTerm.indexOf(ans.id)+1;
 			}
 		} else {
 			d.class = 21;
@@ -2899,7 +2873,7 @@ var Circle = function(){
 		
 		var tempTreeParent = [];
 		
-		var tree = copyTree(GOmap[treeParent.route[0].id[0]], 2);
+		var tree = copyTree(GOmap[treeParent.route[0].id], 2);
 		tempTreeParent.push(tree);
 		
 		initializeTree(tree);
@@ -2908,9 +2882,9 @@ var Circle = function(){
 		var transition = d3.transition();
 		
 		for (var i = 1; i < treeParent.route.length; i++) {
-			tree = tempTreeParent[i-1].children.filter(function(f) {return f.id[0] == treeParent.route[i].id[0];})[0];
+			tree = tempTreeParent[i-1].children.filter(function(f) {return f.id == treeParent.route[i].id;})[0];
 			if (tree) {
-				tree.children = copyTree(GOmap[tree.id[0]], 2).children;
+				tree.children = copyTree(GOmap[tree.id], 2).children;
 				layoutTree(tree);
 				
 				tempTreeParent.push(tree);
@@ -3159,7 +3133,7 @@ var Circle = function(){
 	var transition = function(d) {
 		if (!d) return;
 		
-		d.children = copyTree(GOmap[d.id[0]], 2).children;
+		d.children = copyTree(GOmap[d.id], 2).children;
 		layoutTree(d);
 		
 		oldTree = newTree;
@@ -3246,7 +3220,7 @@ var Circle = function(){
 			.enter().append("rect")
 			.attr("class", "child")
 			.style('opacity', 0)
-			.style('fill', goColorScale(pgObject.goMapping.goTerm.indexOf(treeParent.route[0].id[0])+1))
+			.style('fill', goColorScale(pgObject.goMapping.goTerm.indexOf(treeParent.route[0].id)+1))
 			.call(rectTree);
 		
 		g.append("rect")
@@ -3275,8 +3249,8 @@ var Circle = function(){
 	};
 	var nameTree = function(d) {
 		return d.parent ? 
-			nameTree(d.parent) + "  >  " + d.id[0] : 
-			d.id[0];
+			nameTree(d.parent) + "  >  " + d.id : 
+			d.id;
 	};
 	var toBarDataPrep = function(state) {
 		circ.selectAll('.domainArc')
@@ -3669,7 +3643,7 @@ var Circle = function(){
 		info.select('#pangroupplot').remove();
 	};
 	var treePanGroupClick = function(d) {
-		var curClass = pgObject.goMapping.goTerm.indexOf(treeParent.route[0].id[0])+1;
+		var curClass = pgObject.goMapping.goTerm.indexOf(treeParent.route[0].id)+1;
 		d = circ.selectAll('.classRect').data().filter(function(f) {return f.domain == d.name && f.class == curClass;})[0];
 		updateTree(d, 750);
 	};
@@ -4013,7 +3987,7 @@ var Circle = function(){
 		
 		d3.select('#info').append('div')
 			.attr('id', 'godescription')
-			.html('<p><br/><strong>'+d.name[0][0].toUpperCase()+d.name[0].slice(1)+'</strong></p><p><em>Number of gene families:&nbsp</em>'+d.value+'</p><p><em>GO Term:&nbsp</em>'+ d.id[0]+'</p><p><em>Definition:&nbsp</em>'+d.def[0].match(/"(.*)"/)[1]+'</p>');
+			.html('<p><br/><strong>'+d.name[0].toUpperCase()+d.name.slice(1)+'</strong></p><p><em>Number of gene families:&nbsp</em>'+d.value+'</p><p><em>GO Term:&nbsp</em>'+ d.id+'</p><p><em>Definition:&nbsp</em>'+d.def+'</p>');
 	};
 	this.treeChildUnhover = function(d) {
 		d3.selectAll('#godescription').remove();
