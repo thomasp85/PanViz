@@ -1476,7 +1476,7 @@ geneInfo.forEach(function(d, i) {
 		if (typeof d.go === 'string') {
 			d.go = [d.go];
 		}
-		var bp = d.go.filter(function(f) {return GOmap[f].namespace[0] == "biological_process";});
+		var bp = d.go.filter(function(f) {return GOmap[f].namespace == "biological_process";});
 		if (bp.length) {
 			bp = bp.map(function(dd) {
 				return getParent(GOmap[dd], 0, 0, "gosubset_prok", 2, "biological_process");
@@ -1498,7 +1498,7 @@ geneInfo.forEach(function(d, i) {
 						ans = bp[0];
 					}
 				}
-				d.class = goMapping.goTerm.indexOf(ans.id[0])+1;
+				d.class = goMapping.goTerm.indexOf(ans.id)+1;
 			}
 		} else {
 			d.class = 21;
@@ -2873,7 +2873,7 @@ var Circle = function(){
 		
 		var tempTreeParent = [];
 		
-		var tree = copyTree(GOmap[treeParent.route[0].id[0]], 2);
+		var tree = copyTree(GOmap[treeParent.route[0].id], 2);
 		tempTreeParent.push(tree);
 		
 		initializeTree(tree);
@@ -2882,9 +2882,9 @@ var Circle = function(){
 		var transition = d3.transition();
 		
 		for (var i = 1; i < treeParent.route.length; i++) {
-			tree = tempTreeParent[i-1].children.filter(function(f) {return f.id[0] == treeParent.route[i].id[0];})[0];
+			tree = tempTreeParent[i-1].children.filter(function(f) {return f.id == treeParent.route[i].id;})[0];
 			if (tree) {
-				tree.children = copyTree(GOmap[tree.id[0]], 2).children;
+				tree.children = copyTree(GOmap[tree.id], 2).children;
 				layoutTree(tree);
 				
 				tempTreeParent.push(tree);
@@ -3133,7 +3133,7 @@ var Circle = function(){
 	var transition = function(d) {
 		if (!d) return;
 		
-		d.children = copyTree(GOmap[d.id[0]], 2).children;
+		d.children = copyTree(GOmap[d.id], 2).children;
 		layoutTree(d);
 		
 		oldTree = newTree;
@@ -3220,7 +3220,7 @@ var Circle = function(){
 			.enter().append("rect")
 			.attr("class", "child")
 			.style('opacity', 0)
-			.style('fill', goColorScale(pgObject.goMapping.goTerm.indexOf(treeParent.route[0].id[0])+1))
+			.style('fill', goColorScale(pgObject.goMapping.goTerm.indexOf(treeParent.route[0].id)+1))
 			.call(rectTree);
 		
 		g.append("rect")
@@ -3249,8 +3249,8 @@ var Circle = function(){
 	};
 	var nameTree = function(d) {
 		return d.parent ? 
-			nameTree(d.parent) + "  >  " + d.id[0] : 
-			d.id[0];
+			nameTree(d.parent) + "  >  " + d.id : 
+			d.id;
 	};
 	var toBarDataPrep = function(state) {
 		circ.selectAll('.domainArc')
@@ -3643,7 +3643,7 @@ var Circle = function(){
 		info.select('#pangroupplot').remove();
 	};
 	var treePanGroupClick = function(d) {
-		var curClass = pgObject.goMapping.goTerm.indexOf(treeParent.route[0].id[0])+1;
+		var curClass = pgObject.goMapping.goTerm.indexOf(treeParent.route[0].id)+1;
 		d = circ.selectAll('.classRect').data().filter(function(f) {return f.domain == d.name && f.class == curClass;})[0];
 		updateTree(d, 750);
 	};
@@ -3987,7 +3987,7 @@ var Circle = function(){
 		
 		d3.select('#info').append('div')
 			.attr('id', 'godescription')
-			.html('<p><br/><strong>'+d.name[0][0].toUpperCase()+d.name[0].slice(1)+'</strong></p><p><em>Number of gene families:&nbsp</em>'+d.value+'</p><p><em>GO Term:&nbsp</em>'+ d.id[0]+'</p><p><em>Definition:&nbsp</em>'+d.def[0].match(/"(.*)"/)[1]+'</p>');
+			.html('<p><br/><strong>'+d.name[0].toUpperCase()+d.name.slice(1)+'</strong></p><p><em>Number of gene families:&nbsp</em>'+d.value+'</p><p><em>GO Term:&nbsp</em>'+ d.id+'</p><p><em>Definition:&nbsp</em>'+d.def+'</p>');
 	};
 	this.treeChildUnhover = function(d) {
 		d3.selectAll('#godescription').remove();
