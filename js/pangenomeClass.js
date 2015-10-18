@@ -290,7 +290,7 @@ var opacityToOneTween = function(d, i, a) {
 var getParent = function(node, count, miss, subset, depth, namespace) {
 	if (node.is_obsolete) {
 		if (node.replaced_by) {
-			node = GOmap[node.replaced_by];
+			node = node.replaced_by;
 		} else {
 			return null;
 		}
