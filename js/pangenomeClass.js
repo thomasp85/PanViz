@@ -31,7 +31,7 @@ var union_arrays = function(x, y) {
 var copyTree = function(node, depth) {
 	var accumulateGenes = function(d) {
 		d.OG = d.genes.map(function(d) {return d.id;});
-		if(d.children) {
+		if(d.children && d.children.length) {
 			d.children.forEach(function(dd) {
 				d.OG = union_arrays(d.OG, accumulateGenes(dd));
 			});
@@ -51,14 +51,14 @@ var copyTree = function(node, depth) {
 		return uniqueGenes.getElements();
 	};
 	var accumulateValues = function(d) {
-        if (d.children) {
+        if (d.children && d.children.length) {
 	        d.children.forEach(function(c) {accumulateValues(c);});
         }
         d.geneIDs = countGenes(d);
         d.value = d.geneIDs.length;
 	};
 	var pruneNodes = function(d) {
-		if (d.children) {
+		if (d.children && d.children.length) {
 			for (var i = d.children.length-1; i >= 0; i--) {
 				if (d.children[i].value === 0) {
 					d.children.splice(i, 1);
@@ -81,7 +81,7 @@ var copyTree = function(node, depth) {
 				nChild[i] = child[i];
 			}
 		}
-		if (curDepth < depth && child.children) {
+		if (curDepth < depth && child.children.length) {
 			var children = child.children.map(function(d) {return copyChild(d, curDepth+1);}).filter(function(f) {return f;});
 			if (children.length !== 0) {
 				nChild.children = children;
@@ -299,7 +299,7 @@ var getParent = function(node, count, miss, subset, depth, namespace) {
 		return null;
 	}
 	var doMiss = (node.subset && node.subset.indexOf(subset) != -1) | subset === '' ? 0 : 1;
-	if (node.parent) {
+	if (node.parent.length) {
 	
 		var res = node.parent.map(function(d) {
 			return getParent(d, count+1, miss+doMiss, subset, depth, namespace);
@@ -1439,7 +1439,7 @@ go.edges.from.forEach(function(d, i) {
 var getOffspring = function(d) {
 	if (d.offspring) return d.offspring;
 	
-	if (d.children) {
+	if (d.children.length) {
 		d.offspring = {};
 		
 		d.children.forEach(function(c) {
@@ -1454,7 +1454,7 @@ var getOffspring = function(d) {
 };
 
 GO.forEach(function(d) {
-	if (!d.offspring && d.children) {
+	if (!d.offspring && d.children.length) {
 		getOffspring(d);
 	}
 });
