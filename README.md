@@ -30,7 +30,7 @@ PanViz.html looks for a data.js file that defines all relevant data for the visu
 - **go**: An edgelist representation of the gene ontology. The object must contain 2 properties, "edges" and "vertices", with "edges" being an object with a "from", "to" and "type" property, each being arrays. "from" and "to" is a 1-based edgelist mapping onto vertices in the "vertices" property and "type" the description of the link (either "is_a" or "replaced_by" - other types are ignored). The vertices object contains "id", "name", "def", "namespace", "is_obsolete", "alt_id" and "subset" properties with "id" giving the term, "name" the term name, "def" the definition of the term, "namespace" the GO namespace (either: "biological_process", "molecular_function" or "cellular_component"), "is_obsolete" a boolean for flagging terms as obsolete, "alt_id" giving alternative terms for this term and subset giving an array of GO subsets (only "gosubset_prok" is of interest).
   Truncated example:
 
-        ```json
+        <!-- language: json -->
         {
           "vertices": {
             "name": ["mitochondrion inheritance", "mitochondrial genome maintenance", "reproduction", "obsolete ribosomal chaperone activity", "high-affinity zinc uptake transmembrane transporter activity", "low-affinity zinc ion transmembrane transporter activity"],
@@ -62,4 +62,3 @@ PanViz.html looks for a data.js file that defines all relevant data for the visu
             "type": ["is_a", "is_a", "is_a", "is_a", "is_a", "is_a"]
           }
         }
-        ```
