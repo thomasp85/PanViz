@@ -20,7 +20,9 @@ If a PanViz visualization is provided to you no additional installation is neces
 
 In order to create new visualization based on your own data I would strongly suggest the [PanVizGenerator](https://github.com/thomasp85/PanVizGenerator) R package, that is developed in concert with PanViz and allows you to create PanViz visualizations from a number of data sources and also provides a GUI for those unfamiliar with CLI's
 
-If you really want to do it the hard way, read on:
+* * * 
+ 
+*If you really want to do it the hard way, read on:*
 
 ### Building PanViz
 PanViz requires [node.js](https://nodejs.org) so first make sure you have that. Then download PanViz and unpack it. In the PanViz directory install all dependencies with `npm install`, and then build PanViz with `broccoli build <your-directory>`. PanViz has now been build but it still requires your data (This is what PanVizGenerator is created for).
