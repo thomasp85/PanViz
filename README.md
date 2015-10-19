@@ -65,39 +65,39 @@ PanViz.html looks for a data.js file that defines all relevant data for the visu
 - **dimReduc**: An object containing "MDS" and "PCA" properties, each being an array with an object for each genome in the pangenome, defined by name and x and y coordinates:
   Truncated example:
 
-    {
-      "MDS": [
         {
-          "name": "ST01",
-          "x": -654.3301,
-          "y": -34.2947
-        },
-        {
-          "name": "ST02",
-          "x": -647.0739,
-          "y": -49.1909
-        },
-        {
-          "name": "ST03",
-          "x": -640.2831,
-          "y": 21.2383
+          "MDS": [
+            {
+              "name": "ST01",
+              "x": -654.3301,
+              "y": -34.2947
+            },
+            {
+              "name": "ST02",
+              "x": -647.0739,
+              "y": -49.1909
+            },
+            {
+              "name": "ST03",
+              "x": -640.2831,
+              "y": 21.2383
+            }
+          ],
+          "PCA": [
+            {
+              "name": "ST01",
+              "x": -17.0711,
+              "y": 2.5851
+            },
+            {
+              "name": "ST02",
+              "x": -16.8027,
+              "y": 2.6353
+            },
+            {
+              "name": "ST03",
+              "x": -16.7187,
+              "y": 2.1889
+            }
+          ]
         }
-      ],
-      "PCA": [
-        {
-          "name": "ST01",
-          "x": -17.0711,
-          "y": 2.5851
-        },
-        {
-          "name": "ST02",
-          "x": -16.8027,
-          "y": 2.6353
-        },
-        {
-          "name": "ST03",
-          "x": -16.7187,
-          "y": 2.1889
-        }
-      ]
-    }
