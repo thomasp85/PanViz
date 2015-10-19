@@ -63,8 +63,10 @@ PanViz.html looks for a data.js file that defines all relevant data for the visu
     }
 
 - **dimReduc**: An object containing "MDS" and "PCA" properties, each being an array with an object for each genome in the pangenome, defined by name and x and y coordinates:
-  Truncated example:
 
+    Truncated example:
+    
+<!--lang: json -->
         {
           "MDS": [
             {
