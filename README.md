@@ -32,7 +32,7 @@ PanViz.html looks for a data.js file that defines all relevant data for the visu
 
     Truncated example:
 
-<!--language: JSON -->
+<!-- language: lang-JSON -->
         {
           "vertices": {
             "name": ["mitochondrion inheritance", "mitochondrial genome maintenance", "reproduction", "obsolete ribosomal chaperone activity", "high-affinity zinc uptake transmembrane transporter activity", "low-affinity zinc ion transmembrane transporter activity"],
@@ -64,11 +64,11 @@ PanViz.html looks for a data.js file that defines all relevant data for the visu
           }
         }
 
-- **dimReduc**: An object containing "MDS" and "PCA" properties, each being an array with an object for each genome in the pangenome, defined by name and x and y coordinates:
+- **dimReduc**: An object containing "MDS" and "PCA" properties, each being an array with an object for each genome in the pangenome, defined by name and x and y coordinates. "name" must match a name from the pangenome object (see below):
 
     Truncated example:
 
-<!--language: JSON -->
+<!-- language: lang-JSON -->
         {
           "MDS": [
             {
@@ -105,3 +105,118 @@ PanViz.html looks for a data.js file that defines all relevant data for the visu
             }
           ]
         }
+
+- **root**: A recursive object representation of the dendrogram of genomes, with each object having the properties "height", "leaf" and optionally "children" or "name". "height" gives the branching point for the object, "leaf" is a boolean indicating if the node is an endnode, "children" is an array of similarly formatted child nodes and "name" the potential name of the child node. The name must match a name from the pangenome object (see below):
+
+    Truncated example:
+
+<!-- language: lang-JSON -->
+        {
+          "height": [907.2965],
+          "leaf": [false],
+          "children": [
+            {
+              "name": ["St. thermophilus MN-ZLW-002"],
+              "height": [0],
+              "leaf": [true]
+            },
+            {
+              "height": [371.2273],
+              "leaf": [false],
+              "children": [
+                {
+                  "name": ["St. thermophilus ND03"],
+                  "height": [0],
+                  "leaf": [true]
+                },
+                {
+                  "height": [210.9113],
+                  "leaf": [false],
+                  "children": [
+                    {
+                      "name": ["ST06"],
+                      "height": [0],
+                      "leaf": [true]
+                    },
+                    {
+                      "height": [54.7554],
+                      "leaf": [false],
+                      "children": [
+                        {
+                          "name": ["ST03"],
+                          "height": [0],
+                          "leaf": [true]
+                        },
+                        {
+                          "name": ["ST08"],
+                          "height": [0],
+                          "leaf": [true]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        } 
+
+- **pan**: This object contains the pangenome matrix as an object with a property for each genome, where the property name is the name of the genome ("name" in dimReduc and root will map to these values). Each property will be an array of integer giving the number of genes represented in the corresponding gene group by this genome. The index in the array relates to the index in the geneInfo array (see below):
+
+    Truncated example:
+
+<!-- language: lang-JSON -->
+        {
+          "ST01": [3, 1, 2, 3, 2, 2, 2, 2, 2, 1],
+          "ST02": [3, 3, 2, 2, 2, 2, 2, 2, 1, 1],
+          "ST03": [3, 1, 2, 2, 2, 2, 2, 2, 2, 1],
+          "ST04": [3, 2, 2, 3, 2, 2, 2, 2, 1, 1],
+          "ST05": [3, 2, 2, 3, 2, 2, 0, 2, 2, 1],
+          "ST06": [3, 1, 2, 2, 2, 2, 2, 2, 2, 1]
+        }
+
+- **geneInfo**: This object contains information about each gene group i.e. annotation. It is stored as an array of object, each object containing "name", "go", "ec" and "domain" properties. "name" is a string literal with a human readable name for the gene group, "go" is an array of GO terms that this gene group contains, "ec" is like "go" but for EC. terms and "domain" is the pangenome group that this gene group is part of (either "Singleton", "Accessory" or "Core").
+
+    Truncated example:
+
+<!-- language: lang-JSON -->
+        [
+          {
+            "name": "atp-dependent clp atp-binding subunit",
+            "go": ["GO:0017111", "GO:0005524", "GO:0006508", "GO:0008233"],
+            "ec": ["EC:3.6.1.15"],
+            "domain": "Core"
+          },
+          {
+            "name": "transposase family protein",
+            "go": ["GO:0006313", "GO:0004803", "GO:0003677", "GO:0015074"],
+            "ec": [],
+            "domain": "Accessory"
+          },
+          {
+            "name": "transposase",
+            "go": ["GO:0006313", "GO:0004803", "GO:0003677"],
+            "ec": [],
+            "domain": "Accessory"
+          },
+          {
+            "name": "oligopeptide-binding protein sara",
+            "go": ["GO:0005215", "GO:0006810"],
+            "ec": [],
+            "domain": "Accessory"
+          },
+          {
+            "name": "dna a subunit",
+            "go": ["GO:0006261", "GO:0003677", "GO:0005524", "GO:0003918", "GO:0005694", "GO:0006265", "GO:0005737"],
+            "ec": ["EC:5.99.1.3"],
+            "domain": "Core"
+          },
+          {
+            "name": "dna gyrase subunit b",
+            "go": ["GO:0006261", "GO:0003677", "GO:0005524", "GO:0003918", "GO:0000287", "GO:0005694", "GO:0006265", "GO:0005737"],
+            "ec": ["EC:5.99.1.3"],
+            "domain": "Core"
+          }
+        ] 
+
+I cannot emphasize enough how much you should consider using PanVizGenerator instead of creating this manually, but there you have it :-)
