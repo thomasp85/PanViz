@@ -114,45 +114,45 @@ PanViz.html looks for a data.js file that defines all relevant data for the visu
 
 <!-- language: lang-JSON -->
         {
-          "height": [907.2965],
-          "leaf": [false],
+          "height": 907.2965,
+          "leaf": false,
           "children": [
             {
-              "name": ["St. thermophilus MN-ZLW-002"],
-              "height": [0],
-              "leaf": [true]
+              "name": "St. thermophilus MN-ZLW-002",
+              "height": 0,
+              "leaf": true
             },
             {
-              "height": [371.2273],
-              "leaf": [false],
+              "height": 371.2273,
+              "leaf": false,
               "children": [
                 {
-                  "name": ["St. thermophilus ND03"],
-                  "height": [0],
-                  "leaf": [true]
+                  "name": "St. thermophilus ND03",
+                  "height": 0,
+                  "leaf": true
                 },
                 {
-                  "height": [210.9113],
-                  "leaf": [false],
+                  "height": 210.9113,
+                  "leaf": false,
                   "children": [
                     {
-                      "name": ["ST06"],
-                      "height": [0],
-                      "leaf": [true]
+                      "name": "ST06",
+                      "height": 0,
+                      "leaf": true
                     },
                     {
-                      "height": [54.7554],
-                      "leaf": [false],
+                      "height": 54.7554,
+                      "leaf": false,
                       "children": [
                         {
-                          "name": ["ST03"],
-                          "height": [0],
-                          "leaf": [true]
+                          "name": "ST03",
+                          "height": 0,
+                          "leaf": true
                         },
                         {
-                          "name": ["ST08"],
-                          "height": [0],
-                          "leaf": [true]
+                          "name": "ST08",
+                          "height": 0,
+                          "leaf": true
                         }
                       ]
                     }
