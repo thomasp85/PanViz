@@ -323,68 +323,38 @@ svg text {
 	stroke-width: 3;
 	fill: lightgrey;
 }
-@-webkit-keyframes load {
-	0%		{fill-opacity: 1;}
-	100%	{fill-opacity: 0;}
-}
-@keyframes load {
-	0%		{fill-opacity: 1;}
-	100%	{fill-opacity: 0;}
-}
-#loading {
+#tutorial {
 	position: fixed;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	background-color: white;
-}
-#loading svg {
-	margin: auto;
-	position: absolute;
-	top: 0;
-	left: 0;
-	bottom: 0;
 	right: 0;
-	height: 50%;
-	width: 50%;
+	bottom: 0;
 }
-#loading .core {
-	-webkit-animation-name: load;
-    -webkit-animation-duration: 3s;
-    -webkit-animation-timing-function: linear;
-    -webkit-animation-delay: 0;
-    -webkit-animation-iteration-count: infinite;
-    /* Standard syntax */
-    animation-name: load;
-    animation-duration: 3s;
-    animation-timing-function: linear;
-    animation-delay: 0;
-    animation-iteration-count: infinite;
+.infolink { 
+	text-decoration: none; 
+	vertical-align: middle; 
 }
-#loading .accessory {
-	-webkit-animation-name: load;
-    -webkit-animation-duration: 3s;
-    -webkit-animation-timing-function: linear;
-    -webkit-animation-delay: 1s;
-    -webkit-animation-iteration-count: infinite;
-    /* Standard syntax */
-    animation-name: load;
-    animation-duration: 3s;
-    animation-timing-function: linear;
-    animation-delay: 1s;
-    animation-iteration-count: infinite;
+.infolink:before {
+    content: '?';
+    display: inline-block;
+    font-family: sans-serif;
+    font-weight: bold;
+    text-align: center;
+    width: 1.8ex;
+    height: 1.8ex;
+    font-size: 20pt;
+    line-height: 1.8ex;
+    border-radius: 1.2ex;
+    margin-right: 4px; transform: translateY(-0.3ex);
+    padding: 1px;
+    color: black;
+    background: white;
+    border: 1px solid black;
+    text-decoration: none;
 }
-#loading .singleton {
-	-webkit-animation-name: load;
-    -webkit-animation-duration: 3s;
-    -webkit-animation-timing-function: linear;
-    -webkit-animation-delay: 2s;
-    -webkit-animation-iteration-count: infinite;
-    /* Standard syntax */
-    animation-name: load;
-    animation-duration: 3s;
-    animation-timing-function: linear;
-    animation-delay: 2s;
-    animation-iteration-count: infinite;
+
+.infolink:hover:before
+{
+    color: white;
+    background: firebrick;
+    border-color: firebrick;
+    text-decoration: none;
 }
