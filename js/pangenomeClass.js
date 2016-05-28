@@ -613,6 +613,7 @@ function Pangenome(pan, geneInfo, hc, scatter, plotDim){
 	};
 	var goChange;
 	var oldGOpos = [];
+	var coreThreshold = 1;
 
 // Private methods
 	function getChildren(root){
@@ -706,6 +707,15 @@ function Pangenome(pan, geneInfo, hc, scatter, plotDim){
 		this.nodes = this.cluster.nodes(this.hierachicalData).map(function(d) {d.y = dendrogram.heightScale(d.height); return d;});
 		this.links = this.cluster.links(this.nodes);
 	};
+	this.setThreshold = function(threshold) {
+		coreThreshold = threshold;
+		if (subStrains.length === 0) {
+			this.setSubPan(subStrains);
+		} else {
+			this.setSubPan(allStrains);
+		}
+		
+	};
 	this.setSubPan = function(strains){
 		var fullGeneInfo = this.fullGeneInfo,
 			subGeneInfo = this.subGeneInfo,
@@ -739,8 +749,9 @@ function Pangenome(pan, geneInfo, hc, scatter, plotDim){
 
 		subGeneInfo.forEach(function(d, i) {
 			var geneExist = oldGeneInfoMap.has(d.id);
+			var ratio = nRep[i] / nStrains;
 
-			if (nRep[i] == nStrains) {
+			if (ratio >= coreThreshold) {
 				if (geneExist){
 					if (d.domain == 'Core'){
 						panGroupChanges.update.push(d);
@@ -762,7 +773,7 @@ function Pangenome(pan, geneInfo, hc, scatter, plotDim){
 					panGroupChanges.enter.push(d);
 				}
 				d.domain = 'Singleton';
-			} else if (nRep[i] > 1 && nRep[i] < nStrains){
+			} else if (nRep[i] > 1){
 				if (geneExist){
 					if (d.domain == 'Accessory'){
 						panGroupChanges.update.push(d);
