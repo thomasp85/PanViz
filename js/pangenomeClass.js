@@ -654,7 +654,7 @@ function Pangenome(pan, geneInfo, hc, scatter, plotDim){
 	this.subStrains = [];
 	this.strainSelection = {'a': null, 'b': null};
 	this.cluster = d3.layout.cluster()
-		.size([plotDim.denDim.height, plotDim.denDim.width-100])
+		.size([1, plotDim.denDim.width-100])
 		.separation(function(a, b) { return 1; });
 	Object.defineProperties(this, {
 		"pan": {
@@ -709,10 +709,10 @@ function Pangenome(pan, geneInfo, hc, scatter, plotDim){
 	};
 	this.setThreshold = function(threshold) {
 		coreThreshold = threshold;
-		if (subStrains.length === 0) {
-			this.setSubPan(subStrains);
+		if (this.subStrains.length !== 0) {
+			this.setSubPan(this.subStrains);
 		} else {
-			this.setSubPan(allStrains);
+			this.setSubPan(this.allStrains);
 		}
 		
 	};
@@ -826,7 +826,7 @@ function Pangenome(pan, geneInfo, hc, scatter, plotDim){
 		var counts = data.map(function(d) {return d.filter(function(f) {return f;}).length;}).filter(function(f) {return f;});
 		
 		counts.forEach(function(d) {
-			if (d === size) Core++;
+			if (d/size >= coreThreshold) Core++;
 			else if (d === 1) Singleton++;
 			else Accessory++;
 		});
@@ -1368,8 +1368,8 @@ var svg = d3.select("#chart")
 	.attr("height",plotDim.cDim.height);
 	
 // Gradient for exiting genes arc
-var gradient = svg.append("svg:defs")
-	.append("svg:radialGradient")
+var defs = svg.append("svg:defs");
+var gradient = defs.append("svg:radialGradient")
 		.attr("id", "goExitGradient")
 		.attr("cx", "0")
 		.attr("cy", "0")
@@ -1396,6 +1396,13 @@ gradient.append("svg:stop")
 	.attr("stop-color", "red")
 	.attr("stop-opacity", 0);
 
+defs.append('svg:clipPath')
+	.attr('id', 'denClip')
+	.append('svg:rect')
+		.attr('x', -plotDim.margins.left)
+		.attr('y', -10)
+		.attr('width', plotDim.cDim.width)
+		.attr('height', plotDim.denDim.height+20);
 
 // Sidebar with legends and extra info
 var info = d3.select("#info")
@@ -1410,6 +1417,7 @@ var mdspca = svg.append('g') // <- Scatterplot
 
 var den = svg.append('g') // <- Dendrogram
 	.attr('id', 'dendrogram')
+	.attr('clip-path', 'url(#denClip)')
 	.attr('transform', 'translate(' + plotDim.margins.left + ',' + (+(plotDim.margins.top) +(plotDim.mdsDim.height) + 50) + ')');
 
 var circ = svg.append('g') // <- Circle/bar chart (Main plotting area)
@@ -1754,7 +1762,22 @@ var InfoObject = function(){
 
 // Data
 
-// Methods		
+// Methods	
+	this.initialize = function() {
+		var value = info.selectAll('.threshold');
+		info.select('#thresSlider')
+			.on('input', function() {
+				value.text(parseFloat(this.value).toFixed(2));
+			})
+			.on('change', function() {
+				pgObject.setThreshold(parseFloat(this.value));
+				circle.barScale.domain([0, pgObject.geneInfo.length]);
+				circle.updatePlot()
+					.each('end', function() {
+						geneList.updateList();					
+					});
+			});
+	};
 	this.setPanStat = function(d){
 		panStat.size = d.size;
 		panStat.Singleton = d.Singleton;
@@ -1958,6 +1981,7 @@ var InfoObject = function(){
 	};
 };
 var infoObject = new InfoObject();
+infoObject.initialize();
 
 // Components related to the MDS/PCA scatterplot	
 var Scatter = function(){
@@ -2161,6 +2185,7 @@ var Dendrogram = function(){
 // PRIVATE
 
 // Data
+	var zoomed = false;
 
 // Methods
 	var getChildren = function(root){
@@ -2174,12 +2199,73 @@ var Dendrogram = function(){
 		recurseChildren(root);
 		return children;
 	};
+	var fullWidthScale = d3.scale.linear()
+		.domain([0, 1])
+		.range([0, plotDim.denDim.height]);
+	var zoomWidthScale = d3.scale.linear()
+		.domain([0, 1]);
+	var widthScale = fullWidthScale;
+
 	var elbow = function(d, i) {
-		return "M" + d.source.y + "," + d.source.x + "V" + d.target.x + "H" + d.target.y;
+		return "M" + d.source.y + "," + widthScale(d.source.x) + "V" + widthScale(d.target.x) + "H" + d.target.y;
 	};
 	var heightScale = d3.scale.linear()
 		.domain(d3.extent(pgObject.cluster(pgObject.hierachicalData), function(d) {return d.height;}))
 		.range([plotDim.denDim.width-120, 0]);
+
+	var zoomIn = function(d) {
+		zoomed = true;
+		den.select('#plot-area')
+			.classed('zoomed', true);
+		den.select('#plot-area')
+			.classed('zoomed', true)
+			.classed('prezoom', false)
+			.on('click', null);
+		var yLoc = widthScale.invert(d3.mouse(this)[1]);
+		widthScale = zoomWidthScale;
+		dendrogram.updatePlot(widthScale(yLoc));
+		den.selectAll('.scatterSwitch')
+					.classed('prezoom', false);
+		den.selectAll('.hoverLink')
+			.attr('pointer-events', 'auto');
+	};
+	var changeZoom = function(d) {
+		if(zoomed == (d.name == '-')){
+			if (zoomed) {
+				zoomed = false;
+				widthScale = fullWidthScale;
+				den.select('#plot-area')
+					.datum({x: 0, y: 0})
+					.classed('zoomed', false);
+				dendrogram.updatePlot();
+				den.selectAll('.scatterSwitch')
+					.classed('selected', false)
+					.filter(function(p) { return p.name === '-';})
+					.classed('selected', true);
+			} else {
+				den.select('#plot-area')
+					.classed('prezoom', true)
+					.on('click', zoomIn);
+				den.selectAll('.hoverLink')
+					.attr('pointer-events', 'none');
+				den.selectAll('.scatterSwitch')
+					.classed('prezoom', true)
+					.classed('selected', false)
+					.filter(function(p) { return p.name === '+';})
+					.classed('selected', true);
+			}
+		}
+		
+	};
+	var pan = d3.behavior.drag()
+		.origin(function(d) {return d;})
+		.on('drag', function(d) {
+			if (zoomed) {
+				d.y = Math.min(0, Math.max(plotDim.denDim.height-this.getBBox().height, d.y+d3.event.dy));
+				d3.select(this)
+					.attr('transform', 'translate(0,'+d.y+')');
+			}
+		});
 // PUBLIC
 
 // Data
@@ -2187,17 +2273,30 @@ var Dendrogram = function(){
 // Methods
 	this.heightScale = heightScale; // <- expose as Pangenome.createHCNodeLinks refer to it
 	this.createPlot = function(){
-		den.append('g')
+		zoomWidthScale.range([0, pgObject.nodes.length*plotDim.denDim.height/50]);
+		var denPlot = den.append('g')
+			.datum({x: 0, y: 0})
+			.attr('transform', function(d) {return 'translate(0,'+d.y+')';})
+			.attr('id', 'plot-area')
+			.call(pan);
+
+		denPlot.append('rect')
+			.attr('id', 'drag-rect')
+			.style('opacity', 0)
+			.attr('width', heightScale.range()[0])
+			.attr('height', widthScale.range()[1]);
+
+		denPlot.append('g')
 			.attr('id', 'selectLayer'); // <- For selection bounding box
 		
-		den.selectAll(".link")
+		denPlot.selectAll(".link")
 			.data(pgObject.links)
 			.enter().append("path")
 				.attr("class", "link")
 				.attr("d", elbow);
 		
 		// Invisible links for better selectivity	
-		den.selectAll(".hoverLink")
+		denPlot.selectAll(".hoverLink")
 			.data(pgObject.links)
 			.enter().append("path")
 				.attr("class", "hoverLink")
@@ -2207,10 +2306,9 @@ var Dendrogram = function(){
 				.on('mouseout', this.onLinkMouseout)
 				.on('click', this.onLinkMouseclick);
 			
-		den.selectAll(".node")
+		denPlot.selectAll(".node")
 			.data(pgObject.nodes)
 			.enter().append("g")
-				.attr("class", "node")
 		        .attr("class", function(n) {
 		          if (n.children) {
 		            return "inner";
@@ -2218,10 +2316,11 @@ var Dendrogram = function(){
 		            return "leaf";
 		          }
 		        })
-				.attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; });
+				.classed("node", true)
+				.attr("transform", function(d) { return "translate(" + d.y + "," + widthScale(d.x) + ")"; });
 			
 		
-		den.selectAll(".leaf")
+		denPlot.selectAll(".leaf")
 			.on('click', this.onLeafMouseclick)
 			.on('mouseover', this.onLeafMouseover)
 			.on('mouseout', this.onLeafMouseout)
@@ -2229,12 +2328,59 @@ var Dendrogram = function(){
 			.append('circle')
 				.attr('r', 5);
 				
-		den.selectAll(".leaf")
+		denPlot.selectAll(".leaf")
 			.append("text")
 				.attr("dx", 8)
 				.attr("dy", 3)
 				.style("text-anchor", "start" )
 				.text(function(d) { return d.name; });
+
+
+		// Setting up the zoom
+		var zoomSwitch = den.append('g')
+			.attr('id', 'zoom-switch')
+			.selectAll('g')
+			.data([{'x': 0, 'y': 0, 'name': '+'}, {'x': 40, 'y': 0, 'name': '-'}])
+			.enter().append('g')
+				.on('click', changeZoom)
+				.classed('scatterSwitch', true);
+				
+		zoomSwitch.append('rect')
+			.attr('x', function(d) {return d.x;})
+			.attr('y', function(d) {return d.y;})
+			.attr('width', 40)
+			.attr('height', 20);
+		zoomSwitch.append('text')
+			.style('text-anchor', 'middle')
+			.style('alignment-baseline', 'central')
+			.attr('dx', function(d) {return d.x+20;})
+			.attr('dy', 10)
+			.text(function(d) {return d.name;});
+		den.selectAll('.scatterSwitch')
+			.filter(function(p) { return p.name === '-';})
+			.classed('selected', true);
+	};
+	this.updatePlot = function(loc){
+		if (loc !== undefined) {
+			den.select('#plot-area')
+				.datum({x: 0, y: Math.min(0, Math.max(plotDim.denDim.height-widthScale.range()[1], plotDim.denDim.height/2 - loc))});
+		}
+
+		var transition = den.transition().duration(1000);
+
+		transition.select('#plot-area')
+			.attr('transform', function(d) {return 'translate(0,'+d.y+')';});
+		transition.select('#drag-rect')
+			.attr('height', widthScale.range()[1]);
+		transition.selectAll('.link')
+			.attr('d', elbow);
+		transition.selectAll('.hoverLink')
+			.attr('d', elbow);
+		transition.selectAll('.node')
+			.attr('transform', function(d) { return "translate(" + d.y + "," + widthScale(d.x) + ")"; });
+		transition.select('#selectLayer').selectAll('.tempPan')
+			.attr('y', function(d) {return widthScale(d.xMin)-7;})
+			.attr('height', function(d) {return widthScale(d.xMax-d.xMin)+14;});
 	};
 	this.onLinkMouseover = function(d){
 		var childPos = getChildren(d.source).map(function(c) {return c.x + '-' + c.y;});
@@ -2252,7 +2398,7 @@ var Dendrogram = function(){
 		var children = getChildren(d.source);
 		var childYRange = d3.extent(children, function(d) {return +d.y;});
 		var childXRange = d3.extent(children, function(d) {return +d.x;});
-		var childRange = {yMin: childYRange[0]-7, yMax: childYRange[1]+7, xMin: childXRange[0]-7, xMax: childXRange[1]+7};
+		var childRange = {yMin: childYRange[0], yMax: childYRange[1], xMin: childXRange[0], xMax: childXRange[1]};
 		var childStrains = children.map(function(d) {if (d.name) return d.name;}).filter(function(n) {return n;});
 		var doUpdate = true;
 		
@@ -2277,7 +2423,7 @@ var Dendrogram = function(){
 				selector.transition()
 					.duration(500)
 					.attr('x', function(d) {return d3.mean([d.yMin, d.yMax]);})
-					.attr('y', function(d) {return d3.mean([d.xMin, d.xMax]);})
+					.attr('y', function(d) {return widthScale(d3.mean([d.xMin, d.xMax]));})
 					.attr('width', 0)
 					.attr('height', 0)
 					.remove();
@@ -2289,7 +2435,7 @@ var Dendrogram = function(){
 				selector.enter().append('rect')
 					.classed('tempPan', true)
 					.attr('x', function(d) {return d3.mean([d.yMin, d.yMax]);})
-					.attr('y', function(d) {return d3.mean([d.xMin, d.xMax]);})
+					.attr('y', function(d) {return widthScale(d3.mean([d.xMin, d.xMax]));})
 					.attr('width', 0)
 					.attr('height', 0)
 					.attr('rx', 10)
@@ -2297,10 +2443,10 @@ var Dendrogram = function(){
 					
 				selector.transition()
 					.duration(1000)
-					.attr('x', function(d) {return d.yMin;})
-					.attr('y', function(d) {return d.xMin;})
-					.attr('width', function(d) {return d.yMax-d.yMin;})
-					.attr('height', function(d) {return d.xMax-d.xMin;});
+					.attr('x', function(d) {return d.yMin-7;})
+					.attr('y', function(d) {return widthScale(d.xMin)-7;})
+					.attr('width', function(d) {return d.yMax-d.yMin+14;})
+					.attr('height', function(d) {return widthScale(d.xMax-d.xMin)+14;});
 				
 				pgObject.setSubPan(childStrains);
 			}
@@ -3013,6 +3159,8 @@ var Circle = function(){
 			.on('click', null);
 		mdspca.selectAll('.points')
 			.on('click', null);
+		info.selectAll('#thresSlider')
+			.property('disabled', true);
 	};
 	var unmuteInteraction = function() {
 		den.selectAll('.hoverLink')
@@ -3021,6 +3169,8 @@ var Circle = function(){
 			.on('click', dendrogram.onLeafMouseclick);
 		mdspca.selectAll('.points')
 			.on('click', scatter.onMouseclick);
+		info.selectAll('#thresSlider')
+			.property('disabled', false);
 	};
 	var addBarGrid = function() {
 		circ.insert('g', ':first-child')
