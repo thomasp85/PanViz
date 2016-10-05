@@ -17,11 +17,11 @@ jsDir = browserify(jsDir, {
 });
 
 // Minify
-jsDir = uglify(jsDir, {
-	sourceMapConfig: {
-		enabled: false
-	}
-});
+// jsDir = uglify(jsDir, {
+// 	sourceMapConfig: {
+// 		enabled: false
+// 	}
+// });
 
 // Merge the compiled styles and scripts into one output directory.
 module.exports = mergeTrees([jsDir, cssDir, htmlDir]);

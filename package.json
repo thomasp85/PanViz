@@ -1,6 +1,6 @@
 {
   "name": "panviz",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "D3.js based visualization of functionally annotated pangenomes.",
   "author": "Thomas Lin Pedersen <thomasp85@gmail.com>",
   "keywords": [
@@ -14,9 +14,10 @@
   "repository": "https://github.com/thomasp85/PanViz",
   "license": "GPL-2.0",
   "dependencies": {
-    "d3": "^3.5.6"
+    "d3": "3.5.x"
   },
   "devDependencies": {
+    "broccoli": "^0.16.9",
     "broccoli-browserify": "^0.1.0",
     "broccoli-merge-trees": "^0.2.3",
     "broccoli-uglify-sourcemap": "^1.0.1"
